@@ -1,26 +1,20 @@
 package com.example.smartphonetovirtuality;
 
-import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
-import java.io.IOException;
 
+/**
+ * UPD client which sends data to a UDP server.
+ * @author COGOLUEGNES Charles
+ */
 public class Client {
-    public void sendTCP(String msg, String ip, int port) {
-        Socket socket;
-        try {
-            socket = new Socket(ip, port);
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            out.println(msg);
-            socket.close();
-        }
-        catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
+    /**
+     * Sends a message via a datagram packet through a datagram socket.
+     * @param msg a String which to be sent.
+     * @param ip the ip address of the server.
+     * @param port the port of the server.
+     */
     public void sendUDP(String msg, String ip, int port) {
         try {
             DatagramSocket socket = new DatagramSocket();
