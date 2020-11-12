@@ -168,7 +168,7 @@ public class SensorsService extends Service implements SensorEventListener {
          */
         @Override
         protected Void doInBackground(String... args) {
-            new Client().sendUDP(args[0], ip, port);
+            Client.sendUDP(args[0], ip, port);
             return null;
         }
         @Override

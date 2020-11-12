@@ -15,7 +15,7 @@ public class Client {
      * @param ip the ip address of the server.
      * @param port the port of the server.
      */
-    public void sendUDP(String msg, String ip, int port) {
+    public static void sendUDP(String msg, String ip, int port) {
         try {
             DatagramSocket socket = new DatagramSocket();
             byte[] buf = msg.getBytes();
