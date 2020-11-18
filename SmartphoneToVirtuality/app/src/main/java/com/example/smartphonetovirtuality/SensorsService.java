@@ -86,11 +86,11 @@ public class SensorsService extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
+            case Sensor.TYPE_ROTATION_VECTOR:
+                trigger(Sensor.TYPE_ROTATION_VECTOR, rotationDegrees(event.values));
+                break;
             case Sensor.TYPE_ACCELEROMETER:
                 trigger(Sensor.TYPE_ACCELEROMETER, event.values[0]+" "+event.values[1]+" "+event.values[2]);
-                break;
-            case Sensor.TYPE_GYROSCOPE:
-                trigger(Sensor.TYPE_GYROSCOPE, event.values[0]+" "+event.values[1]+" "+event.values[2]);
                 break;
             case Sensor.TYPE_PROXIMITY:
                 trigger(Sensor.TYPE_PROXIMITY, normalizeProximity(event.values[0]));
@@ -108,7 +108,7 @@ public class SensorsService extends Service implements SensorEventListener {
     private void bindSensors() {
         SensorManager manager = (SensorManager) getSystemService(SENSOR_SERVICE);
         manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_NORMAL);
+        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_NORMAL);
 
         Sensor proximity = manager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         max_proximity = proximity.getMaximumRange();
@@ -123,6 +123,15 @@ public class SensorsService extends Service implements SensorEventListener {
      */
     private String normalizeProximity(float proximity) {
         return ((proximity - min_proximity) / (max_proximity - min_proximity))+"";
+    }
+
+    /**
+     * Return a String of converted radians to degrees
+     * @param arr the values of the event
+     * @return a string of degrees values
+     */
+    private String rotationDegrees(float[] arr) {
+        return Math.toDegrees(arr[0])+" "+Math.toDegrees(arr[1])+" "+Math.toDegrees(arr[2])+" "+Math.toDegrees(arr[3]);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
