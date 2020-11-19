@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.util.DisplayMetrics;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -31,6 +32,9 @@ public class SensorsService extends Service implements SensorEventListener {
     private boolean running;
     private WakeLock wakeLock;
     private float max_proximity, min_proximity;
+
+    private static final int TYPE_SCREEN_SIZE = -12;
+    private static final double INCH_METER_CONST = 0.0254;
 
     @Nullable
     @Override
@@ -85,18 +89,21 @@ public class SensorsService extends Service implements SensorEventListener {
      */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        switch (event.sensor.getType()) {
-            case Sensor.TYPE_ROTATION_VECTOR:
-                trigger(Sensor.TYPE_ROTATION_VECTOR, rotationDegrees(event.values));
-                break;
-            case Sensor.TYPE_ACCELEROMETER:
-                trigger(Sensor.TYPE_ACCELEROMETER, event.values[0]+" "+event.values[1]+" "+event.values[2]);
-                break;
-            case Sensor.TYPE_PROXIMITY:
-                trigger(Sensor.TYPE_PROXIMITY, normalizeProximity(event.values[0]));
-                break;
-            default:
-                System.out.println("Unhandled sensor.");
+        if(running) {
+            switch (event.sensor.getType()) {
+                case Sensor.TYPE_ROTATION_VECTOR:
+                    trigger(Sensor.TYPE_ROTATION_VECTOR, rotationDegrees(event.values));
+                    break;
+                case Sensor.TYPE_ACCELEROMETER:
+                    trigger(Sensor.TYPE_ACCELEROMETER, event.values[0] + " " + event.values[1] + " " + event.values[2]);
+                    break;
+                case Sensor.TYPE_PROXIMITY:
+                    trigger(TYPE_SCREEN_SIZE, screenSize());
+                    trigger(Sensor.TYPE_PROXIMITY, normalizeProximity(event.values[0]));
+                    break;
+                default:
+                    System.out.println("Unhandled sensor.");
+            }
         }
     }
 
@@ -134,6 +141,15 @@ public class SensorsService extends Service implements SensorEventListener {
         return Math.toDegrees(arr[0])+" "+Math.toDegrees(arr[1])+" "+Math.toDegrees(arr[2])+" "+Math.toDegrees(arr[3]);
     }
 
+    /**
+     * Returns the size of the screen of the device.
+     * @return a string which contains the height and the width in meters.
+     */
+    private String screenSize() {
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        return (dm.heightPixels / dm.xdpi * INCH_METER_CONST )+" "+(dm.widthPixels / dm.ydpi * INCH_METER_CONST);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private Notification createNotification() {
         String channelId = "STVService";
@@ -161,11 +177,11 @@ public class SensorsService extends Service implements SensorEventListener {
 
     /**
      * Triggers a background task to send sensors data.
-     * @param sensor the sensor which has changed.
+     * @param type the sensor which has changed.
      * @param data the coordinates or value of the sensor.
      */
-    public void trigger(int sensor, String data) {
-        if(running) new SensorsTask().execute(sensor+"_"+data);
+    private void trigger(int type, String data) {
+        new SensorsTask().execute(type+"_"+data);
     }
 
     private static class SensorsTask extends AsyncTask<String, Void, Void> {
@@ -187,7 +203,5 @@ public class SensorsService extends Service implements SensorEventListener {
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 }
