@@ -67,6 +67,7 @@ public class SensorsService extends Service implements SensorEventListener {
         acquireLock();
         ip = intent.getStringExtra("ip");
         port = intent.getIntExtra("port", 0);
+        trigger(TYPE_SCREEN_SIZE, screenSize());
         running = true;
         return Service.START_STICKY;
     }
@@ -98,7 +99,6 @@ public class SensorsService extends Service implements SensorEventListener {
                     trigger(Sensor.TYPE_ACCELEROMETER, event.values[0] + " " + event.values[1] + " " + event.values[2]);
                     break;
                 case Sensor.TYPE_PROXIMITY:
-                    trigger(TYPE_SCREEN_SIZE, screenSize());
                     trigger(Sensor.TYPE_PROXIMITY, normalizeProximity(event.values[0]));
                     break;
                 default:
