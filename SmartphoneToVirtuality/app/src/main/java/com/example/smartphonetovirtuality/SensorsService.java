@@ -21,6 +21,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 /**
  * An Android service aiming to send data of different sensors to a server.
  * When the service is on it has to be able to send sensors data in any condition (ex: screen lock).
@@ -33,8 +36,8 @@ public class SensorsService extends Service implements SensorEventListener {
     private WakeLock wakeLock;
     private float max_proximity, min_proximity;
 
-    private static final int TYPE_SCREEN_SIZE = -12;
-    private static final double INCH_METER_CONST = 0.0254;
+    private static final int TYPE_SCREEN_SIZE = 37;
+    private static final float INCH_METER_CONST = 0.0254f;
 
     @Nullable
     @Override
@@ -62,6 +65,7 @@ public class SensorsService extends Service implements SensorEventListener {
      * @param startId id.
      * @return a start id.
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         acquireLock();
@@ -75,6 +79,7 @@ public class SensorsService extends Service implements SensorEventListener {
     /**
      * Release the lock and stop the notification.
      */
+    @RequiresApi(api = Build.VERSION_CODES.ECLAIR)
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -88,6 +93,7 @@ public class SensorsService extends Service implements SensorEventListener {
      * Triggers a change when a sensor data has changed.
      * @param event the data of the sensor.
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onSensorChanged(SensorEvent event) {
         if(running) {
@@ -96,7 +102,7 @@ public class SensorsService extends Service implements SensorEventListener {
                     trigger(Sensor.TYPE_ROTATION_VECTOR, rotationDegrees(event.values));
                     break;
                 case Sensor.TYPE_ACCELEROMETER:
-                    trigger(Sensor.TYPE_ACCELEROMETER, event.values[0] + " " + event.values[1] + " " + event.values[2]);
+                    trigger(Sensor.TYPE_ACCELEROMETER, event.values);
                     break;
                 case Sensor.TYPE_PROXIMITY:
                     trigger(Sensor.TYPE_PROXIMITY, normalizeProximity(event.values[0]));
@@ -126,28 +132,31 @@ public class SensorsService extends Service implements SensorEventListener {
     /**
      * Normalize the given proximity with a max and a min proximity of the device.
      * @param proximity the given proximity.
-     * @return a string which is the normalize proximity.
+     * @return an array of float which contains the normalize proximity.
      */
-    private String normalizeProximity(float proximity) {
-        return ((proximity - min_proximity) / (max_proximity - min_proximity))+"";
+    private float[] normalizeProximity(float proximity) {
+        return new float[] {(proximity - min_proximity) / (max_proximity - min_proximity)};
     }
 
     /**
      * Return a String of converted radians to degrees
      * @param arr the values of the event
-     * @return a string of degrees values
+     * @return a array of float of degrees values
      */
-    private String rotationDegrees(float[] arr) {
-        return Math.toDegrees(arr[0])+" "+Math.toDegrees(arr[1])+" "+Math.toDegrees(arr[2])+" "+Math.toDegrees(arr[3]);
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private float[] rotationDegrees(float[] arr) {
+        float[] ret = new float[arr.length];
+        for(int i=0; i< ret.length; i++) ret[i] = (float) Math.toDegrees(arr[i]);
+        return ret;
     }
 
     /**
      * Returns the size of the screen of the device.
-     * @return a string which contains the height and the width in meters.
+     * @return an array which contains the height and the width in meters.
      */
-    private String screenSize() {
+    private float[] screenSize() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        return (dm.heightPixels / dm.xdpi * INCH_METER_CONST )+" "+(dm.widthPixels / dm.ydpi * INCH_METER_CONST);
+        return new float[] {dm.heightPixels / dm.xdpi * INCH_METER_CONST, dm.widthPixels / dm.ydpi * INCH_METER_CONST};
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -180,11 +189,13 @@ public class SensorsService extends Service implements SensorEventListener {
      * @param type the sensor which has changed.
      * @param data the coordinates or value of the sensor.
      */
-    private void trigger(int type, String data) {
-        new SensorsTask().execute(type+"_"+data);
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void trigger(int type, float[] data) {
+        float[] args = {type};
+        new SensorsTask().execute(args, data);
     }
 
-    private static class SensorsTask extends AsyncTask<String, Void, Void> {
+    private static class SensorsTask extends AsyncTask<float[], Void, Void> {
 
         /**
          * Sends the data via UDP to the server.
@@ -192,8 +203,8 @@ public class SensorsService extends Service implements SensorEventListener {
          * @return Void.
          */
         @Override
-        protected Void doInBackground(String... args) {
-            Client.sendUDP(args[0], ip, port);
+        protected Void doInBackground(float[]... args) {
+            Client.sendUDP((byte) Math.round(args[0][0]), args[1], ip, port);
             return null;
         }
         @Override
