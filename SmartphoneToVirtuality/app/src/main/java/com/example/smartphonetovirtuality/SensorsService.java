@@ -99,7 +99,7 @@ public class SensorsService extends Service implements SensorEventListener {
         if(running) {
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_ROTATION_VECTOR:
-                    trigger(Sensor.TYPE_ROTATION_VECTOR, rotationDegrees(event.values));
+                    trigger(Sensor.TYPE_ROTATION_VECTOR, event.values);
                     break;
                 case Sensor.TYPE_ACCELEROMETER:
                     trigger(Sensor.TYPE_ACCELEROMETER, event.values);
@@ -136,18 +136,6 @@ public class SensorsService extends Service implements SensorEventListener {
      */
     private float[] normalizeProximity(float proximity) {
         return new float[] {(proximity - min_proximity) / (max_proximity - min_proximity)};
-    }
-
-    /**
-     * Return a String of converted radians to degrees
-     * @param arr the values of the event
-     * @return a array of float of degrees values
-     */
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private float[] rotationDegrees(float[] arr) {
-        float[] ret = new float[arr.length];
-        for(int i=0; i< ret.length; i++) ret[i] = (float) Math.toDegrees(arr[i]);
-        return ret;
     }
 
     /**
