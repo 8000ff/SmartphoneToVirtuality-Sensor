@@ -9,6 +9,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.CompoundButton;
@@ -48,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("ip", ip.getText().toString());
                     intent.putExtra("port", Integer.parseInt(port.getText().toString()));
                     PackageManager manager = getPackageManager();
-                    boolean hasGyroscope = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE);
+                    boolean hasRotationVector = ((SensorManager) getSystemService(SENSOR_SERVICE)).getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null;
                     boolean hasAccelerometer = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
                     boolean hasProximity = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_PROXIMITY);
-                    if(handleSensorsExist(hasGyroscope, hasAccelerometer, hasProximity)) startService(intent);
+                    if(handleSensorsExist(hasRotationVector, hasAccelerometer, hasProximity)) startService(intent);
                 }
                 else stopService(intent);
             }
@@ -60,14 +62,14 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Check if sensors exist on the phone.
-     * @param gyroscope if has gyroscope.
+     * @param rotationVector if has rotation vector.
      * @param accelerometer if has accelerometer.
      * @param proximity if has proximity.
      * @return true if phone has every wanted sensors false if not.
      */
-    private boolean handleSensorsExist(boolean gyroscope, boolean accelerometer, boolean proximity) {
+    private boolean handleSensorsExist(boolean rotationVector, boolean accelerometer, boolean proximity) {
         ArrayList<String> sensors = new ArrayList<>();
-        if(!gyroscope) sensors.add("Gyroscope");
+        if(!rotationVector) sensors.add("Rotation Vector");
         if(!accelerometer) sensors.add("Accelerometer");
         if(!proximity) sensors.add("Proximity");
         if(sensors.size() > 0){
