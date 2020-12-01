@@ -102,8 +102,8 @@ public class SensorsService extends Service implements SensorEventListener {
                 case Sensor.TYPE_ROTATION_VECTOR:
                     trigger(Sensor.TYPE_ROTATION_VECTOR, event.values);
                     break;
-                case Sensor.TYPE_ACCELEROMETER:
-                    trigger(Sensor.TYPE_ACCELEROMETER, event.values);
+                case Sensor.TYPE_LINEAR_ACCELERATION:
+                    trigger(Sensor.TYPE_LINEAR_ACCELERATION, event.values);
                     break;
                 case Sensor.TYPE_PROXIMITY:
                     trigger(Sensor.TYPE_PROXIMITY, normalizeProximity(event.values[0]));
@@ -121,13 +121,13 @@ public class SensorsService extends Service implements SensorEventListener {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void bindSensors() {
         SensorManager manager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_NORMAL);
+        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_FASTEST);
+        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_FASTEST);
 
         Sensor proximity = manager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         max_proximity = proximity.getMaximumRange();
         min_proximity = proximity.getMinDelay();
-        manager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_NORMAL);
+        manager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     /**
