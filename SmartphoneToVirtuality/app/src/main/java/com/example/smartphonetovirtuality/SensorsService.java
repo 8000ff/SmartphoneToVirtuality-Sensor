@@ -121,13 +121,13 @@ public class SensorsService extends Service implements SensorEventListener {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void bindSensors() {
         SensorManager manager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_FASTEST);
-        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_FASTEST);
+        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
+        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_NORMAL);
 
         Sensor proximity = manager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         max_proximity = proximity.getMaximumRange();
         min_proximity = proximity.getMinDelay();
-        manager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_FASTEST);
+        manager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     /**
