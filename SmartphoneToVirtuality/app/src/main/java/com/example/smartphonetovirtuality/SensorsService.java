@@ -103,7 +103,8 @@ public class SensorsService extends Service implements SensorEventListener {
                     trigger(Sensor.TYPE_ROTATION_VECTOR, event.values);
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
-                    trigger(Sensor.TYPE_LINEAR_ACCELERATION, event.values);
+                    // Since acceleration is not used in the server yet it is not sent.
+                    //trigger(Sensor.TYPE_LINEAR_ACCELERATION, event.values);
                     break;
                 case Sensor.TYPE_PROXIMITY:
                     trigger(Sensor.TYPE_PROXIMITY, normalizeProximity(event.values[0]));
